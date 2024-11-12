@@ -1,0 +1,29 @@
+# Define compiler and flags
+CC = gcc
+CFLAGS = -Wall -Wextra -Werror
+
+# Define target executable name
+TARGET = scheduler
+
+# Default target to build the program
+all: $(TARGET)
+
+# Compile the scheduler program
+$(TARGET): scheduler.c
+	$(CC) $(CFLAGS) -o $(TARGET) scheduler.c
+
+# Run the program with FCFS scheduling
+run-fcfs: $(TARGET)
+	./$(TARGET) FCFS process.txt
+
+# Run the program with SJF scheduling
+run-sjf: $(TARGET)
+	./$(TARGET) SJF process.txt
+
+# Run the program with Priority scheduling
+run-prio: $(TARGET)
+	./$(TARGET) PRIO process.txt
+
+# Clean up generated files
+clean:
+	rm -f $(TARGET)

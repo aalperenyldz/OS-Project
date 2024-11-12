@@ -7,6 +7,7 @@ typedef struct {
     int arrival_time;
     int priority;
     int burst_time;
+    int remaining_time;
     int completion_time;
     int turnaround_time;
     int waiting_time;
@@ -83,7 +84,12 @@ void prio(Process processes[], int n) {
     int current_time = 0;
     int completed = 0;
     float total_turnaround_time = 0, total_waiting_time = 0;
-    int is_completed[10] = {0}; // İşlemlerin tamamlanıp tamamlanmadığını takip etmek için bir dizi
+    int is_completed[10] = {0};
+
+    // İşlemlerin kalan sürelerini başlangıçta burst time olarak ayarla
+    for (int i = 0; i < n; i++) {
+        processes[i].remaining_time = processes[i].burst_time;
+    }
 
     while (completed < n) {
         int highest_priority = -1;
@@ -91,7 +97,7 @@ void prio(Process processes[], int n) {
 
         // En yüksek önceliğe sahip ve henüz tamamlanmamış işlemi bul
         for (int i = 0; i < n; i++) {
-            if (processes[i].arrival_time <= current_time && processes[i].priority < highest_priority_value && !is_completed[i]) { 
+            if (processes[i].arrival_time <= current_time && processes[i].priority < highest_priority_value && !is_completed[i]) {
                 highest_priority = i;
                 highest_priority_value = processes[i].priority;
             }
@@ -103,21 +109,25 @@ void prio(Process processes[], int n) {
             continue;
         }
 
-        // İşlemin tamamlanma zamanını, dönüş süresini ve bekleme süresini hesapla
-        processes[highest_priority].completion_time = current_time + processes[highest_priority].burst_time;
-        processes[highest_priority].turnaround_time = processes[highest_priority].completion_time - processes[highest_priority].arrival_time;
-        processes[highest_priority].waiting_time = processes[highest_priority].turnaround_time - processes[highest_priority].burst_time;
+        // En yüksek öncelikli işlemi 1 zaman birimi boyunca çalıştır
+        processes[highest_priority].remaining_time--;
 
-        // Şimdiki zamanı ve tamamlanan işlem sayısını güncelle
-        current_time = processes[highest_priority].completion_time;
-        is_completed[highest_priority] = 1; // İşlemi tamamlandı olarak işaretle
-        completed++;
+        // İşlem tamamlandı mı kontrol et
+        if (processes[highest_priority].remaining_time == 0) {
+            processes[highest_priority].completion_time = current_time + 1;
+            processes[highest_priority].turnaround_time = processes[highest_priority].completion_time - processes[highest_priority].arrival_time;
+            processes[highest_priority].waiting_time = processes[highest_priority].turnaround_time - processes[highest_priority].burst_time;
 
-        // Toplam dönüş süresini ve bekleme süresini güncelle
-        total_turnaround_time += processes[highest_priority].turnaround_time;
-        total_waiting_time += processes[highest_priority].waiting_time;
+            is_completed[highest_priority] = 1;
+            completed++;
 
-        printf("Process %d Completion Time: %d\n", processes[highest_priority].id, processes[highest_priority].completion_time); 
+            total_turnaround_time += processes[highest_priority].turnaround_time;
+            total_waiting_time += processes[highest_priority].waiting_time;
+
+            printf("Process %d Completion Time: %d\n", processes[highest_priority].id, processes[highest_priority].completion_time);
+        }
+
+        current_time++;
     }
 
     printf("Average Turnaround Time: %.2f\n", total_turnaround_time / n);
