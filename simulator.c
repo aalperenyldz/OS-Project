@@ -40,6 +40,7 @@ void sjf(Process processes[] , int n){
     int current_time = 0;
     int completed = 0;
     float total_turnaround_time = 0, total_waiting_time = 0;
+    int is_completed[10] = {0}; // İşlemlerin tamamlanıp tamamlanmadığını takip etmek için bir dizi
 
     while (completed < n){
         int shortest_job = -1; 
@@ -47,7 +48,7 @@ void sjf(Process processes[] , int n){
 
         for(int i = 0 ; i < n ; i++){
             if (processes[i].arrival_time <= current_time && processes[i].burst_time < shortest_burst 
-                && processes[i].completion_time == 0) 
+                && !is_completed[i])  // Tamamlanmamış işlemleri kontrol et
             {
                 shortest_job = i; 
                 shortest_burst = processes[i].burst_time;
@@ -64,6 +65,7 @@ void sjf(Process processes[] , int n){
         processes[shortest_job].waiting_time = processes[shortest_job].turnaround_time - processes[shortest_job].burst_time;
         
         current_time = processes[shortest_job].completion_time;
+        is_completed[shortest_job] = 1; // İşlemi tamamlandı olarak işaretle
         completed++;
         
         total_turnaround_time += processes[shortest_job].turnaround_time;
@@ -81,14 +83,15 @@ void prio(Process processes[], int n) {
     int current_time = 0;
     int completed = 0;
     float total_turnaround_time = 0, total_waiting_time = 0;
+    int is_completed[10] = {0}; // İşlemlerin tamamlanıp tamamlanmadığını takip etmek için bir dizi
 
     while (completed < n) {
         int highest_priority = -1;
-        int highest_priority_value = -1;
+        int highest_priority_value = 9999;
 
         // En yüksek önceliğe sahip ve henüz tamamlanmamış işlemi bul
         for (int i = 0; i < n; i++) {
-            if (processes[i].arrival_time <= current_time && processes[i].priority > highest_priority_value && processes[i].completion_time == 0) {
+            if (processes[i].arrival_time <= current_time && processes[i].priority < highest_priority_value && !is_completed[i]) { 
                 highest_priority = i;
                 highest_priority_value = processes[i].priority;
             }
@@ -107,6 +110,7 @@ void prio(Process processes[], int n) {
 
         // Şimdiki zamanı ve tamamlanan işlem sayısını güncelle
         current_time = processes[highest_priority].completion_time;
+        is_completed[highest_priority] = 1; // İşlemi tamamlandı olarak işaretle
         completed++;
 
         // Toplam dönüş süresini ve bekleme süresini güncelle
